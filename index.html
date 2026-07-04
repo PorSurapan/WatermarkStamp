@@ -1,0 +1,1240 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0" />
+    <title>Watermark Stamp - ประทับลายน้ำ</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏷️</text></svg>" />
+    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com" />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap"
+      rel="stylesheet" />
+    <style>
+      :root {
+        --ink: #332e26;
+        --ink-2: #3d372c;
+        --paper: #efe6d2;
+        --paper-2: #ddd0b2;
+        --stamp: #b8452e;
+        --stamp-dark: #8c3221;
+        --brass: #a9843f;
+        --brass-soft: #a9843f4d;
+        --text: #2b2620;
+        --muted: #8a8271;
+        --ok: #3f6b52;
+        --phase2: #7a8a4f;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: var(--ink);
+        color: var(--paper);
+        font-family: 'Sarabun', sans-serif;
+      }
+
+      /* subtle drifting seal-pattern behind everything, echoes the product itself */
+      body {
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: stretch;
+      }
+      @media (max-height: 640px) {
+        body {
+          overflow-y: auto;
+        }
+      }
+      body::before {
+        content: '';
+        position: fixed;
+        inset: -20% -20%;
+        background-image:
+          radial-gradient(ellipse 70% 55% at 10% 5%, rgba(184, 69, 46, 0.25), transparent 55%),
+          radial-gradient(ellipse 45% 35% at 88% 88%, rgba(169, 132, 63, 0.18), transparent 50%),
+          repeating-linear-gradient(
+            -30deg,
+            transparent 0 100px,
+            rgba(169, 132, 63, 0.13) 100px 102px,
+            transparent 102px 200px
+          ),
+          repeating-linear-gradient(
+            60deg,
+            transparent 0 150px,
+            rgba(184, 69, 46, 0.08) 150px 151px,
+            transparent 151px 300px
+          );
+        animation: drift 70s linear infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+      @keyframes drift {
+        from {
+          transform: translate(0, 0);
+        }
+        to {
+          transform: translate(200px, 140px);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        body::before {
+          animation: none;
+        }
+      }
+
+      .page {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 1120px;
+        margin: 0 auto;
+        padding: 22px 24px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      header.hero {
+        margin-bottom: 16px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11.5px;
+        letter-spacing: 0.04em;
+        color: var(--brass);
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+      .eyebrow::before {
+        content: '';
+        width: 18px;
+        height: 1px;
+        background: var(--brass);
+        display: inline-block;
+      }
+      h1 {
+        font-family: 'Noto Serif Thai', serif;
+        font-weight: 700;
+        font-size: clamp(22px, 2.6vw, 30px);
+        line-height: 1.15;
+        margin: 0;
+        color: var(--paper);
+      }
+      h1 em {
+        font-style: normal;
+        color: var(--stamp);
+        -webkit-text-stroke: 0.5px var(--brass-soft);
+      }
+      .lede {
+        font-size: 13px;
+        line-height: 1.55;
+        color: #c8c3b6;
+        max-width: 46ch;
+        margin: 0;
+      }
+      .lede b {
+        color: var(--paper);
+        font-weight: 600;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 336px 1fr;
+        gap: 22px;
+        align-items: stretch;
+        flex: 1;
+        min-height: 0;
+      }
+      @media (max-width: 860px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+        body {
+          overflow-y: auto;
+        }
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 0;
+      }
+      .stack .card {
+        flex-shrink: 0;
+      }
+      .stack .card.dominant {
+        flex: 1;
+        min-height: 0;
+      }
+
+      .card {
+        background: var(--paper);
+        color: var(--text);
+        border-radius: 14px;
+        padding: 20px 24px;
+        box-shadow:
+          0 16px 32px -18px rgba(0, 0, 0, 0.4),
+          0 0 0 1px rgba(169, 132, 63, 0.12);
+        min-height: 0;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .card h2 {
+        font-family: 'Noto Serif Thai', serif;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 2px;
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .card h2 .step {
+        font-size: 11px;
+        color: var(--brass);
+        border: 1px solid var(--brass-soft);
+        border-radius: 100px;
+        padding: 1px 8px;
+        font-family: 'Sarabun', sans-serif;
+        font-weight: 600;
+      }
+      .card p.hint {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 2px 0 10px;
+      }
+
+      .dropzone {
+        border: 1.5px dashed var(--brass-soft);
+        border-radius: 10px;
+        padding: 12px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease;
+        background: #fffdf9;
+        position: relative;
+      }
+      .dropzone:hover,
+      .dropzone.dragging {
+        border-color: var(--stamp);
+        background: #fff8f0;
+      }
+      .dropzone:has(input:disabled) {
+        background: #e8e4da;
+        border-color: #ccc8bc;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
+      .dropzone:has(input:disabled) .dz-title,
+      .dropzone:has(input:disabled) .dz-sub {
+        color: #9a917f;
+      }
+      .dropzone input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .dropzone .dz-title {
+        font-weight: 600;
+        font-size: 13.5px;
+      }
+      .dropzone .dz-sub {
+        font-size: 11.5px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .file-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--ok);
+        background: #e9f1ea;
+        border-radius: 100px;
+        padding: 4px 11px;
+      }
+
+      .field {
+        margin-top: 13px;
+      }
+      .field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: var(--text);
+      }
+      .field label .val {
+        color: var(--brass);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      input[type='text'] {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid var(--paper-2);
+        background: #fffdf9;
+        border-radius: 8px;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 14px;
+        color: var(--text);
+      }
+      input[type='text']:disabled {
+        background: #e8e4da;
+        color: #9a917f;
+        border-color: #ccc8bc;
+        cursor: not-allowed;
+      }
+      input[type='text']:focus-visible,
+      input[type='range']:focus-visible,
+      button:focus-visible {
+        outline: 2.5px solid var(--stamp);
+        outline-offset: 2px;
+      }
+
+      .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      input[type='range'] {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 4px;
+        border-radius: 4px;
+        background: var(--paper-2);
+      }
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 17px;
+        height: 17px;
+        border-radius: 50%;
+        background: var(--stamp);
+        border: 2px solid var(--paper);
+        box-shadow: 0 0 0 1px var(--stamp);
+        cursor: pointer;
+        margin-top: -6.5px;
+      }
+      input[type='range']::-webkit-slider-runnable-track {
+        height: 4px;
+        border-radius: 4px;
+        background: var(--paper-2);
+      }
+      input[type='range']::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--stamp);
+        border: 2px solid var(--paper);
+        cursor: pointer;
+      }
+
+      button#processBtn {
+        width: 100%;
+        margin-top: 16px;
+        background: var(--stamp);
+        color: #fdf6ee;
+        border: none;
+        padding: 12px 20px;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        border-radius: 9px;
+        cursor: pointer;
+        transition:
+          background 0.15s ease,
+          transform 0.1s ease;
+        letter-spacing: 0.01em;
+        flex-shrink: 0;
+      }
+      button#processBtn:hover:not(:disabled) {
+        background: var(--stamp-dark);
+      }
+      button#processBtn:active:not(:disabled) {
+        transform: scale(0.99);
+      }
+      button#processBtn:disabled {
+        background: #d8cfbd;
+        color: #9a917f;
+        cursor: not-allowed;
+      }
+
+      button#doneBtn {
+        width: 100%;
+        margin-top: 10px;
+        background: var(--ok);
+        color: #fdf6ee;
+        border: none;
+        padding: 12px 20px;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        border-radius: 9px;
+        cursor: pointer;
+        transition:
+          background 0.15s ease,
+          transform 0.1s ease;
+        letter-spacing: 0.01em;
+        flex-shrink: 0;
+        display: none;
+      }
+      button#doneBtn:hover {
+        background: #2f5340;
+      }
+      button#doneBtn:active {
+        transform: scale(0.99);
+      }
+
+      input[type='range']:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .progress-wrap {
+        margin-top: 10px;
+        display: none;
+        flex-shrink: 0;
+      }
+      .progress-wrap.active {
+        display: block;
+      }
+      .phase-label {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .phase-label .phase-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--stamp);
+        flex-shrink: 0;
+      }
+      .phase-label.phase-2 .phase-dot {
+        background: var(--phase2);
+      }
+      .progress-track {
+        height: 6px;
+        background: var(--paper-2);
+        border-radius: 100px;
+        overflow: hidden;
+      }
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--stamp);
+        transition:
+          width 0.2s ease,
+          background 0.2s ease;
+      }
+      .progress-fill.phase-2 {
+        background: var(--phase2);
+      }
+      .progress-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 6px;
+        font-size: 11.5px;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+      #timer {
+        font-weight: 700;
+        color: var(--stamp);
+      }
+      #status {
+        margin-top: 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        text-align: center;
+      }
+      #status.done {
+        color: var(--ok);
+      }
+
+      .time-breakdown {
+        display: none;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .time-breakdown.active {
+        display: flex;
+      }
+      .time-chip {
+        flex: 1;
+        background: #fffdf9;
+        border: 1px solid var(--paper-2);
+        border-radius: 8px;
+        padding: 7px 10px;
+        text-align: center;
+      }
+      .time-chip .chip-label {
+        font-size: 10.5px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+      .time-chip .chip-label .phase-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--stamp);
+      }
+      .time-chip.phase-2 .chip-label .phase-dot {
+        background: var(--phase2);
+      }
+      .time-chip .chip-val {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+        margin-top: 2px;
+      }
+
+      /* preview card */
+      .preview-card {
+        display: flex;
+        flex-direction: column;
+      }
+      .preview-frame {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--paper-2);
+        background: repeating-conic-gradient(#efe8d8 0% 25%, #f6f1e6 0% 50%) 50% / 16px 16px;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #previewCanvas {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
+      }
+      .preview-caption {
+        margin-top: 8px;
+        font-size: 11.5px;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+      .preview-caption b {
+        color: var(--text);
+      }
+
+      footer {
+        text-align: center;
+        font-size: 11px;
+        color: #6b6656;
+        flex-shrink: 0;
+        padding-top: 10px;
+      }
+
+      .note {
+        background: var(--ink-2);
+        border-left: 2.5px solid var(--brass);
+        border-radius: 0 10px 10px 0;
+        padding: 14px 16px;
+        flex-shrink: 0;
+      }
+      .note .note-title {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--brass);
+        margin-bottom: 8px;
+      }
+      .note .note-title .dot {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        border: 1.3px solid var(--brass);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-style: italic;
+        font-family: Georgia, serif;
+        flex-shrink: 0;
+      }
+      .note ul {
+        margin: 0;
+        padding-left: 16px;
+        font-size: 12px;
+        line-height: 1.65;
+        color: #c8c3b6;
+      }
+      .note li::marker {
+        color: var(--brass);
+      }
+      .note li b {
+        color: var(--paper);
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <h1>Watermark Stamp</h1>
+      </header>
+
+      <div class="layout">
+        <div class="stack">
+          <!-- LEFT: controls -->
+          <section class="card controls dominant">
+            <h2>
+              <span class="step">1</span>
+              เลือกรูปภาพ
+            </h2>
+            <p class="hint">เลือกได้ทีละหลายไฟล์ (.jpg, .png)</p>
+            <div
+              class="dropzone"
+              id="dropzone">
+              <input
+                type="file"
+                id="imageInput"
+                accept="image/*"
+                multiple />
+              <div class="dz-title">คลิกหรือลากไฟล์มาวางตรงนี้</div>
+              <div class="dz-sub">รองรับการเลือกหลายไฟล์พร้อมกัน</div>
+              <div id="fileChip"></div>
+            </div>
+
+            <h2 style="margin-top: 20px">
+              <span class="step">2</span>
+              ตั้งค่าลายน้ำ
+            </h2>
+            <p class="hint">ปรับค่าแล้วดูตัวอย่างทางขวาได้ทันที</p>
+
+            <div class="field">
+              <label for="wmText">ข้อความลายน้ำ</label>
+              <input
+                type="text"
+                id="wmText"
+                value="ตัวอย่างเอกสาร" />
+            </div>
+
+            <div class="field grid2">
+              <div>
+                <label>
+                  ความโปร่งใส
+                  <span
+                    class="val"
+                    id="opacityVal">
+                    0.15
+                  </span>
+                </label>
+                <input
+                  type="range"
+                  id="wmOpacity"
+                  min="0.05"
+                  max="0.5"
+                  step="0.01"
+                  value="0.15" />
+              </div>
+              <div>
+                <label>
+                  ขนาดตัวอักษร
+                  <span
+                    class="val"
+                    id="fontSizeVal">
+                    30
+                  </span>
+                  px
+                </label>
+                <input
+                  type="range"
+                  id="wmFontSize"
+                  min="12"
+                  max="80"
+                  step="1"
+                  value="30" />
+              </div>
+            </div>
+
+            <div class="field grid2">
+              <div>
+                <label>
+                  ระยะห่าง
+                  <span
+                    class="val"
+                    id="spacingVal">
+                    160
+                  </span>
+                  px
+                </label>
+                <input
+                  type="range"
+                  id="wmSpacing"
+                  min="60"
+                  max="320"
+                  step="10"
+                  value="160" />
+              </div>
+              <div>
+                <label>
+                  มุมเอียง
+                  <span
+                    class="val"
+                    id="angleVal">
+                    -30
+                  </span>
+                  °
+                </label>
+                <input
+                  type="range"
+                  id="wmAngle"
+                  min="-90"
+                  max="90"
+                  step="5"
+                  value="-30" />
+              </div>
+            </div>
+
+            <h2 style="margin-top: 20px">
+              <span class="step">3</span>
+              ประมวลผล
+            </h2>
+            <p class="hint">กดปุ่มเพื่อเลือกที่บันทึก ZIP และเริ่มประมวลผล</p>
+
+            <button
+              id="processBtn"
+              disabled>
+              เลือกที่เก็บไฟล์ ZIP และเริ่มประมวลผล
+            </button>
+
+            <div
+              class="progress-wrap"
+              id="progressWrap">
+              <div
+                class="phase-label"
+                id="phaseLabel">
+                <span class="phase-dot"></span>
+                กำลังประทับลายน้ำ
+              </div>
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  id="progressFill"></div>
+              </div>
+              <div class="progress-meta">
+                <span id="progressCount"></span>
+                <span id="timer">00:00</span>
+              </div>
+            </div>
+            <div id="status"></div>
+            <div
+              class="time-breakdown"
+              id="timeBreakdown">
+              <div class="time-chip">
+                <div class="chip-label">
+                  <span class="phase-dot"></span>
+                  ประทับลายน้ำ
+                </div>
+                <div
+                  class="chip-val"
+                  id="phase1Time">
+                  –
+                </div>
+              </div>
+              <div class="time-chip phase-2">
+                <div class="chip-label">
+                  <span class="phase-dot"></span>
+                  บีบอัด ZIP
+                </div>
+                <div
+                  class="chip-val"
+                  id="phase2Time">
+                  –
+                </div>
+              </div>
+            </div>
+            <button id="doneBtn">เสร็จสิ้น — เลือกไฟล์ใหม่</button>
+          </section>
+        </div>
+
+        <div class="stack">
+          <!-- RIGHT: live preview -->
+          <aside class="card preview-card dominant">
+            <h2>ตัวอย่าง</h2>
+            <p class="hint">แสดงผลจากรูปแรกที่เลือก หรือกระดาษตัวอย่างถ้ายังไม่ได้เลือกรูป</p>
+            <div class="preview-frame">
+              <canvas
+                id="previewCanvas"
+                width="640"
+                height="480"></canvas>
+            </div>
+            <div class="preview-caption">
+              <span>
+                ฟอนต์:
+                <b>Sarabun</b>
+              </span>
+              <span id="previewDims">640 × 480</span>
+            </div>
+          </aside>
+
+          <!-- speed factors note -->
+          <aside class="note">
+            <div class="note-title">
+              <span class="dot">i</span>
+              ความเร็วขึ้นอยู่กับอะไร
+            </div>
+            <ul>
+              <li>
+                <b>สเปกเครื่อง</b>
+                — ประมวลผลบน CPU ของคุณเอง
+              </li>
+              <li>
+                <b>จำนวนและขนาดรูป</b>
+                — รูปใหญ่/ละเอียดสูงใช้เวลานานกว่า
+              </li>
+              <li>
+                <b>ระยะห่างลายน้ำ</b>
+                — ยิ่งถี่ ยิ่งวาดซ้ำมากขึ้น
+              </li>
+              <li>
+                <b>ZIP (STORE)</b>
+                — Chrome/Edge stream ลงดิสก์ทีละรูป ไม่สะสม RAM
+              </li>
+            </ul>
+          </aside>
+        </div>
+      </div>
+
+      <footer>
+        ประมวลผลด้วย Canvas API ในเบราว์เซอร์ของคุณ — ไฟล์ไม่ถูกส่งออกจากเครื่อง ไม่มีการอัปโหลดรูปขึ้นอินเทอร์เน็ต
+      </footer>
+    </div>
+
+    <script>
+      const imageInput = document.getElementById('imageInput')
+      const processBtn = document.getElementById('processBtn')
+      const statusDiv = document.getElementById('status')
+      const dropzone = document.getElementById('dropzone')
+      const fileChip = document.getElementById('fileChip')
+      const progressWrap = document.getElementById('progressWrap')
+      const progressFill = document.getElementById('progressFill')
+      const progressCount = document.getElementById('progressCount')
+      const timerEl = document.getElementById('timer')
+      const phaseLabel = document.getElementById('phaseLabel')
+      const timeBreakdown = document.getElementById('timeBreakdown')
+      const phase1TimeEl = document.getElementById('phase1Time')
+      const phase2TimeEl = document.getElementById('phase2Time')
+      const previewCanvas = document.getElementById('previewCanvas')
+      const previewDims = document.getElementById('previewDims')
+      const doneBtn = document.getElementById('doneBtn')
+
+      const wmTextEl = document.getElementById('wmText')
+      const wmOpacityEl = document.getElementById('wmOpacity')
+      const wmFontSizeEl = document.getElementById('wmFontSize')
+      const wmSpacingEl = document.getElementById('wmSpacing')
+      const wmAngleEl = document.getElementById('wmAngle')
+
+      const opacityVal = document.getElementById('opacityVal')
+      const fontSizeVal = document.getElementById('fontSizeVal')
+      const spacingVal = document.getElementById('spacingVal')
+      const angleVal = document.getElementById('angleVal')
+
+      let previewImg = null // first user-selected image, used as live preview background
+      const ORIGINAL_TITLE = document.title
+
+      // ---- core watermark tiling routine, shared by preview + export ----
+      function drawTiledWatermark(ctx, canvasW, canvasH, opts) {
+        ctx.save()
+        ctx.font = `bold ${opts.fontSize}px "Sarabun", sans-serif`
+        ctx.fillStyle = `rgba(0, 0, 0, ${opts.opacity})`
+        ctx.textBaseline = 'middle'
+        ctx.textAlign = 'center'
+
+        const angleRad = (opts.angle * Math.PI) / 180
+        const diag = Math.sqrt(canvasW * canvasW + canvasH * canvasH)
+
+        let rowCount = 0
+        for (let y = -diag; y < diag; y += opts.spacing) {
+          rowCount++
+          const offsetX = rowCount % 2 === 0 ? opts.spacing / 2 : 0
+          for (let x = -diag; x < diag; x += opts.spacing) {
+            ctx.save()
+            ctx.translate(x + offsetX, y)
+            ctx.rotate(angleRad)
+            ctx.fillText(opts.text, 0, 0)
+            ctx.restore()
+          }
+        }
+        ctx.restore()
+      }
+
+      function currentOpts() {
+        return {
+          text: wmTextEl.value || 'sample',
+          opacity: parseFloat(wmOpacityEl.value),
+          fontSize: parseInt(wmFontSizeEl.value),
+          spacing: parseInt(wmSpacingEl.value),
+          angle: parseInt(wmAngleEl.value),
+        }
+      }
+
+      const PREVIEW_MAX = 720 // cap the longest side of the preview canvas for performance
+
+      function fitCanvasToImage(img) {
+        const ratio = img.width / img.height
+        if (ratio >= 1) {
+          previewCanvas.width = PREVIEW_MAX
+          previewCanvas.height = Math.round(PREVIEW_MAX / ratio)
+        } else {
+          previewCanvas.height = PREVIEW_MAX
+          previewCanvas.width = Math.round(PREVIEW_MAX * ratio)
+        }
+      }
+
+      function renderPreview() {
+        const ctx = previewCanvas.getContext('2d')
+        const w = previewCanvas.width,
+          h = previewCanvas.height
+        ctx.clearRect(0, 0, w, h)
+
+        if (previewImg) {
+          // draw the full image with no cropping — canvas aspect ratio already matches the image
+          ctx.drawImage(previewImg, 0, 0, w, h)
+        } else {
+          ctx.fillStyle = '#fbf7ee'
+          ctx.fillRect(0, 0, w, h)
+          ctx.strokeStyle = '#e6dcc4'
+          ctx.lineWidth = 1
+          ctx.strokeRect(8, 8, w - 16, h - 16)
+        }
+
+        drawTiledWatermark(ctx, w, h, currentOpts())
+      }
+
+      ;[wmTextEl, wmOpacityEl, wmFontSizeEl, wmSpacingEl, wmAngleEl].forEach((el) => {
+        el.addEventListener('input', () => {
+          opacityVal.textContent = wmOpacityEl.value
+          fontSizeVal.textContent = wmFontSizeEl.value
+          spacingVal.textContent = wmSpacingEl.value
+          angleVal.textContent = wmAngleEl.value
+          renderPreview()
+        })
+      })
+
+      imageInput.addEventListener('change', () => {
+        const files = imageInput.files
+        processBtn.disabled = files.length === 0
+        if (files.length > 0) {
+          fileChip.innerHTML = `<span class="file-chip">✓ เลือกไว้ ${files.length.toLocaleString('th-TH')} รูป</span>`
+          loadImage(files[0]).then((img) => {
+            previewImg = img
+            previewDims.textContent = `${img.width} × ${img.height}`
+            fitCanvasToImage(img)
+            renderPreview()
+          })
+        } else {
+          fileChip.innerHTML = ''
+          previewImg = null
+          previewCanvas.width = 640
+          previewCanvas.height = 480
+          previewDims.textContent = '640 × 480'
+          renderPreview()
+        }
+      })
+      ;['dragover', 'dragleave', 'drop'].forEach((evt) => {
+        dropzone.addEventListener(evt, (e) => {
+          e.preventDefault()
+          dropzone.classList.toggle('dragging', evt === 'dragover')
+        })
+      })
+      dropzone.addEventListener('drop', (e) => {
+        if (e.dataTransfer.files.length) {
+          imageInput.files = e.dataTransfer.files
+          imageInput.dispatchEvent(new Event('change'))
+        }
+      })
+
+      function formatTime(ms) {
+        const totalSec = ms / 1000
+        const m = Math.floor(totalSec / 60)
+        const s = totalSec % 60
+        if (m > 0) return `${String(m).padStart(2, '0')}:${s.toFixed(0).padStart(2, '0')}`
+        return `${s.toFixed(1)} วิ`
+      }
+
+      processBtn.addEventListener('click', async () => {
+        const files = imageInput.files
+        if (files.length === 0) return
+
+        // ── ขอ file handle ระหว่าง user gesture (click) เพื่อใช้ Streaming API ──
+        // File System Access API รองรับ Chrome/Edge; Firefox/Safari ใช้ fallback ใน RAM
+        const canStream = 'showSaveFilePicker' in window
+        let writable = null
+
+        if (canStream) {
+          try {
+            const fh = await window.showSaveFilePicker({
+              suggestedName: 'watermarked_images.zip',
+              types: [{ description: 'ZIP Archive', accept: { 'application/zip': ['.zip'] } }],
+            })
+            writable = await fh.createWritable()
+          } catch (e) {
+            if (e.name === 'AbortError') return // ผู้ใช้กด Cancel
+            writable = null
+          }
+        }
+
+        // fallback แบบ in-memory — เตือนว่าอาจ OOM หากไฟล์มากหรือใหญ่
+        if (
+          !writable &&
+          !confirm(
+            'เบราว์เซอร์นี้ไม่รองรับการบันทึก ZIP แบบ Streaming\n' +
+              'รูปทั้งหมดจะถูกโหลดเข้า RAM ก่อนดาวน์โหลด — อาจล่มหากมีรูปจำนวนมาก\n\n' +
+              'แนะนำให้ใช้ Chrome หรือ Edge เพื่อประสิทธิภาพสูงสุด\nต้องการดำเนินการต่อหรือไม่?',
+          )
+        )
+          return
+
+        const controlsToDisable = [imageInput, wmTextEl, wmOpacityEl, wmFontSizeEl, wmSpacingEl, wmAngleEl]
+        controlsToDisable.forEach((el) => (el.disabled = true))
+        processBtn.disabled = true
+        progressWrap.classList.add('active')
+        timeBreakdown.classList.remove('active')
+        progressFill.style.width = '0%'
+        progressFill.classList.remove('phase-2')
+        phaseLabel.classList.remove('phase-2')
+        phaseLabel.innerHTML = '<span class="phase-dot"></span> กำลังประทับลายน้ำ'
+        statusDiv.classList.remove('done')
+
+        const overallStart = performance.now()
+        let phase1Elapsed = 0,
+          phase2Elapsed = 0
+        timerEl.textContent = '00:00'
+        const timerInterval = setInterval(() => {
+          timerEl.textContent = formatTime(performance.now() - overallStart)
+        }, 200)
+
+        statusDiv.innerText = 'กำลังโหลดฟอนต์ Sarabun...'
+        document.title = '🔄 กำลังเตรียมฟอนต์...'
+        await Promise.all([document.fonts.load('400 30px Sarabun'), document.fonts.load('700 30px Sarabun')])
+        await document.fonts.ready
+
+        const opts = currentOpts()
+        const phase1Start = performance.now()
+        document.title = `⏳ กำลังประทับลายน้ำ (0/${files.length})`
+
+        // helper: ประทับลายน้ำ 1 ไฟล์ → Uint8Array
+        async function processFile(file) {
+          const img = await loadImage(file)
+          const canvas = document.createElement('canvas')
+          canvas.width = img.width
+          canvas.height = img.height
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, 0, 0)
+          // scale watermark proportionally to match preview (which is capped at PREVIEW_MAX)
+          const scale = Math.max(img.width, img.height) / PREVIEW_MAX
+          const scaledOpts = { ...opts, fontSize: opts.fontSize * scale, spacing: opts.spacing * scale }
+          drawTiledWatermark(ctx, canvas.width, canvas.height, scaledOpts)
+          const blob = await canvasToBlob(canvas, file.type)
+          return new Uint8Array(await blob.arrayBuffer())
+        }
+
+        if (writable) {
+          // ── STREAMING PATH: เขียนตรงลงดิสก์ทีละรูป ไม่สะสม RAM ──
+          let writeChain = Promise.resolve()
+          let zipErr = null
+
+          const zipStream = new fflate.Zip((err, data, final) => {
+            if (err) {
+              zipErr = err
+              return
+            }
+            const chunk = data.slice() // copy เพราะ fflate อาจ reuse buffer
+            writeChain = writeChain.then(() => writable.write(chunk))
+          })
+
+          for (let i = 0; i < files.length; i++) {
+            progressFill.style.width = ((i / files.length) * 100).toFixed(0) + '%'
+            progressCount.textContent = `${i + 1} / ${files.length} รูป`
+            statusDiv.innerText = `กำลังประทับลายน้ำรูปที่ ${i + 1}/${files.length}...`
+            document.title = `⏳ กำลังประทับลายน้ำ (${i + 1}/${files.length})`
+
+            const file = files[i]
+            try {
+              const data = await processFile(file)
+              const entry = new fflate.ZipPassThrough(`watermarked_${file.name}`)
+              zipStream.add(entry)
+              entry.push(data, true) // true = chunk สุดท้ายของไฟล์นี้
+              await writeChain // รอให้เขียนลงดิสก์ก่อนโหลดรูปถัดไป
+              if (zipErr) throw zipErr
+            } catch (err) {
+              console.error(`Error on ${file.name}:`, err)
+              statusDiv.innerText = `เกิดข้อผิดพลาดกับรูป ${file.name}`
+            }
+          }
+
+          phase1Elapsed = performance.now() - phase1Start
+          progressFill.style.width = '100%'
+          progressCount.textContent = `${files.length} / ${files.length} รูป`
+          progressFill.classList.add('phase-2')
+          phaseLabel.classList.add('phase-2')
+          phaseLabel.innerHTML = '<span class="phase-dot"></span> กำลังปิดไฟล์ ZIP'
+          statusDiv.innerText = 'กำลังปิดไฟล์ ZIP...'
+          document.title = '📦 กำลังบันทึก ZIP...'
+
+          const phase2Start = performance.now()
+          zipStream.end()
+          await writeChain
+          await writable.close()
+          phase2Elapsed = performance.now() - phase2Start
+        } else {
+          // ── IN-MEMORY FALLBACK (fflate, STORE mode) ──
+          const zipFiles = {}
+
+          for (let i = 0; i < files.length; i++) {
+            progressFill.style.width = ((i / files.length) * 100).toFixed(0) + '%'
+            progressCount.textContent = `${i + 1} / ${files.length} รูป`
+            statusDiv.innerText = `กำลังประทับลายน้ำรูปที่ ${i + 1}/${files.length}...`
+            document.title = `⏳ กำลังประทับลายน้ำ (${i + 1}/${files.length})`
+
+            const file = files[i]
+            try {
+              const data = await processFile(file)
+              zipFiles[`watermarked_${file.name}`] = [data, { level: 0 }] // STORE
+            } catch (err) {
+              console.error(`Error on ${file.name}:`, err)
+              statusDiv.innerText = `เกิดข้อผิดพลาดกับรูป ${file.name}`
+            }
+          }
+
+          phase1Elapsed = performance.now() - phase1Start
+          progressFill.style.width = '0%'
+          progressFill.classList.add('phase-2')
+          phaseLabel.classList.add('phase-2')
+          phaseLabel.innerHTML = '<span class="phase-dot"></span> กำลังบีบอัดไฟล์ ZIP'
+          statusDiv.innerText = 'กำลังบีบอัดไฟล์ ZIP...'
+          document.title = '📦 กำลังบีบอัด ZIP...'
+
+          const phase2Start = performance.now()
+          const zipped = await new Promise((resolve, reject) => {
+            fflate.zip(zipFiles, { level: 0 }, (err, data) => {
+              if (err) reject(err)
+              else resolve(data)
+            })
+          })
+          phase2Elapsed = performance.now() - phase2Start
+
+          progressFill.style.width = '100%'
+          progressCount.textContent = `${files.length} / ${files.length} รูป`
+
+          const zipBlob = new Blob([zipped], { type: 'application/zip' })
+          const link = document.createElement('a')
+          link.href = URL.createObjectURL(zipBlob)
+          link.download = 'watermarked_images.zip'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }
+
+        clearInterval(timerInterval)
+        const totalTime = formatTime(performance.now() - overallStart)
+        timerEl.textContent = totalTime
+        statusDiv.innerText = `เสร็จเรียบร้อย — ${files.length.toLocaleString('th-TH')} รูป ใช้เวลารวม ${totalTime}`
+        statusDiv.classList.add('done')
+        document.title = `✅ เสร็จสิ้น — ${ORIGINAL_TITLE}`
+
+        phase1TimeEl.textContent = formatTime(phase1Elapsed)
+        phase2TimeEl.textContent = formatTime(phase2Elapsed)
+        timeBreakdown.classList.add('active')
+
+        doneBtn.style.display = 'block'
+      })
+
+      doneBtn.addEventListener('click', () => {
+        ;[imageInput, wmTextEl, wmOpacityEl, wmFontSizeEl, wmSpacingEl, wmAngleEl].forEach(
+          (el) => (el.disabled = false),
+        )
+        processBtn.disabled = true
+        imageInput.value = ''
+        fileChip.innerHTML = ''
+        previewImg = null
+        previewCanvas.width = 640
+        previewCanvas.height = 480
+        previewDims.textContent = '640 × 480'
+        renderPreview()
+        doneBtn.style.display = 'none'
+        progressWrap.classList.remove('active')
+        timeBreakdown.classList.remove('active')
+        statusDiv.innerText = ''
+        statusDiv.classList.remove('done')
+        document.title = ORIGINAL_TITLE
+      })
+
+      function loadImage(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            const img = new Image()
+            img.onload = () => resolve(img)
+            img.onerror = reject
+            img.src = e.target.result
+          }
+          reader.onerror = reject
+          reader.readAsDataURL(file)
+        })
+      }
+
+      function canvasToBlob(canvas, type) {
+        return new Promise((resolve) => {
+          canvas.toBlob((blob) => resolve(blob), type, 0.9)
+        })
+      }
+
+      // initial paint once fonts are ready
+      document.fonts.ready.then(renderPreview)
+      renderPreview()
+    </script>
+  </body>
+</html>
