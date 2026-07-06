@@ -176,6 +176,33 @@
         body {
           overflow-y: auto;
         }
+        .stack .card.dominant {
+          flex: none;
+          min-height: 380px;
+        }
+      }
+      @media (max-width: 480px) {
+        .page {
+          padding: 14px 14px;
+        }
+        header.hero {
+          gap: 10px;
+        }
+        .card {
+          padding: 16px 16px;
+        }
+        .grid2 {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        button#processBtn,
+        button#doneBtn {
+          font-size: 14px;
+          padding: 11px 16px;
+        }
+        .preview-frame {
+          min-height: 220px;
+        }
       }
 
       .stack {
@@ -627,7 +654,9 @@
       <div class="layout">
         <div class="stack">
           <!-- LEFT: controls -->
-          <section class="card controls dominant">
+          <section
+            class="card controls dominant"
+            aria-label="ตั้งค่าลายน้ำ">
             <h2>
               <span class="step">1</span>
               เลือกรูปภาพ
@@ -639,6 +668,7 @@
               <input
                 type="file"
                 id="imageInput"
+                aria-label="เลือกรูปภาพ"
                 accept="image/*"
                 multiple />
               <div class="dz-title">คลิกหรือลากไฟล์มาวางตรงนี้</div>
@@ -662,13 +692,14 @@
 
             <div class="field grid2">
               <div>
-                <label>
+                <label for="wmOpacity">
                   ความโปร่งใส
                   <span
                     class="val"
                     id="opacityVal">
-                    0.15
+                    15
                   </span>
+                  %
                 </label>
                 <input
                   type="range"
@@ -679,12 +710,12 @@
                   value="0.15" />
               </div>
               <div>
-                <label>
+                <label for="wmFontSize">
                   ขนาดตัวอักษร
                   <span
                     class="val"
                     id="fontSizeVal">
-                    30
+                    40
                   </span>
                   px
                 </label>
@@ -694,46 +725,46 @@
                   min="12"
                   max="80"
                   step="1"
-                  value="30" />
+                  value="40" />
               </div>
             </div>
 
             <div class="field grid2">
               <div>
-                <label>
-                  ระยะห่าง
+                <label for="wmBottomOffset">
+                  ระยะขอบล่าง
                   <span
                     class="val"
-                    id="spacingVal">
-                    160
+                    id="bottomOffsetVal">
+                    50
                   </span>
                   px
                 </label>
                 <input
                   type="range"
-                  id="wmSpacing"
-                  min="60"
-                  max="320"
-                  step="10"
-                  value="160" />
+                  id="wmBottomOffset"
+                  min="0"
+                  max="300"
+                  step="1"
+                  value="50" />
               </div>
               <div>
-                <label>
-                  มุมเอียง
+                <label for="wmXOffset">
+                  ขยับซ้าย-ขวา
                   <span
                     class="val"
-                    id="angleVal">
-                    -30
+                    id="xOffsetVal">
+                    0
                   </span>
-                  °
+                  px
                 </label>
                 <input
                   type="range"
-                  id="wmAngle"
-                  min="-90"
-                  max="90"
-                  step="5"
-                  value="-30" />
+                  id="wmXOffset"
+                  min="-300"
+                  max="300"
+                  step="1"
+                  value="0" />
               </div>
             </div>
 
@@ -801,7 +832,9 @@
 
         <div class="stack">
           <!-- RIGHT: live preview -->
-          <aside class="card preview-card dominant">
+          <aside
+            class="card preview-card dominant"
+            aria-label="ตัวอย่างลายน้ำ">
             <h2>ตัวอย่าง</h2>
             <p class="hint">แสดงผลจากรูปแรกที่เลือก หรือกระดาษตัวอย่างถ้ายังไม่ได้เลือกรูป</p>
             <div class="preview-frame">
@@ -820,7 +853,9 @@
           </aside>
 
           <!-- speed factors note -->
-          <aside class="note">
+          <aside
+            class="note"
+            aria-label="ปัจจัยความเร็ว">
             <div class="note-title">
               <span class="dot">i</span>
               ความเร็วขึ้นอยู่กับอะไร
@@ -835,12 +870,8 @@
                 — รูปใหญ่/ละเอียดสูงใช้เวลานานกว่า
               </li>
               <li>
-                <b>ระยะห่างลายน้ำ</b>
-                — ยิ่งถี่ ยิ่งวาดซ้ำมากขึ้น
-              </li>
-              <li>
-                <b>ZIP (STORE)</b>
-                — Chrome/Edge stream ลงดิสก์ทีละรูป ไม่สะสม RAM
+                <b>เบราว์เซอร์</b>
+                — Chrome/Edge stream ลง disk เร็วกว่า Firefox/Safari ที่ต้องพักไฟล์ใน RAM
               </li>
             </ul>
           </aside>
@@ -852,7 +883,7 @@
       </footer>
     </div>
 
-    <script>
+    <script type="module">
       const imageInput = document.getElementById('imageInput')
       const processBtn = document.getElementById('processBtn')
       const statusDiv = document.getElementById('status')
@@ -873,50 +904,38 @@
       const wmTextEl = document.getElementById('wmText')
       const wmOpacityEl = document.getElementById('wmOpacity')
       const wmFontSizeEl = document.getElementById('wmFontSize')
-      const wmSpacingEl = document.getElementById('wmSpacing')
-      const wmAngleEl = document.getElementById('wmAngle')
-
+      const wmBottomOffsetEl = document.getElementById('wmBottomOffset')
+      const wmXOffsetEl = document.getElementById('wmXOffset')
       const opacityVal = document.getElementById('opacityVal')
       const fontSizeVal = document.getElementById('fontSizeVal')
-      const spacingVal = document.getElementById('spacingVal')
-      const angleVal = document.getElementById('angleVal')
+      const bottomOffsetVal = document.getElementById('bottomOffsetVal')
+      const xOffsetVal = document.getElementById('xOffsetVal')
 
       let previewImg = null // first user-selected image, used as live preview background
       const ORIGINAL_TITLE = document.title
 
-      // ---- core watermark tiling routine, shared by preview + export ----
+      // ---- single centered watermark stamp at the bottom of the image ----
       function drawTiledWatermark(ctx, canvasW, canvasH, opts) {
         ctx.save()
         ctx.font = `bold ${opts.fontSize}px "Sarabun", sans-serif`
-        ctx.fillStyle = `rgba(0, 0, 0, ${opts.opacity})`
-        ctx.textBaseline = 'middle'
+        // difference blend + white fill = readable on both light and dark backgrounds
+        ctx.globalCompositeOperation = 'difference'
+        ctx.fillStyle = `rgba(255, 255, 255, ${opts.opacity})`
+        ctx.textBaseline = 'bottom'
         ctx.textAlign = 'center'
 
-        const angleRad = (opts.angle * Math.PI) / 180
-        const diag = Math.sqrt(canvasW * canvasW + canvasH * canvasH)
-
-        let rowCount = 0
-        for (let y = -diag; y < diag; y += opts.spacing) {
-          rowCount++
-          const offsetX = rowCount % 2 === 0 ? opts.spacing / 2 : 0
-          for (let x = -diag; x < diag; x += opts.spacing) {
-            ctx.save()
-            ctx.translate(x + offsetX, y)
-            ctx.rotate(angleRad)
-            ctx.fillText(opts.text, 0, 0)
-            ctx.restore()
-          }
-        }
+        const margin = opts.fontSize * 0.6
+        ctx.fillText(opts.text, canvasW / 2 + opts.xOffset, canvasH - margin - opts.bottomOffset)
         ctx.restore()
       }
 
       function currentOpts() {
         return {
           text: wmTextEl.value || 'sample',
-          opacity: parseFloat(wmOpacityEl.value),
-          fontSize: parseInt(wmFontSizeEl.value),
-          spacing: parseInt(wmSpacingEl.value),
-          angle: parseInt(wmAngleEl.value),
+          opacity: Number.parseFloat(wmOpacityEl.value),
+          fontSize: Number.parseInt(wmFontSizeEl.value),
+          bottomOffset: Number.parseInt(wmBottomOffsetEl.value),
+          xOffset: Number.parseInt(wmXOffsetEl.value),
         }
       }
 
@@ -953,12 +972,12 @@
         drawTiledWatermark(ctx, w, h, currentOpts())
       }
 
-      ;[wmTextEl, wmOpacityEl, wmFontSizeEl, wmSpacingEl, wmAngleEl].forEach((el) => {
+      ;[wmTextEl, wmOpacityEl, wmFontSizeEl, wmBottomOffsetEl, wmXOffsetEl].forEach((el) => {
         el.addEventListener('input', () => {
-          opacityVal.textContent = wmOpacityEl.value
+          opacityVal.textContent = `${Math.round(Number.parseFloat(wmOpacityEl.value) * 100)}`
           fontSizeVal.textContent = wmFontSizeEl.value
-          spacingVal.textContent = wmSpacingEl.value
-          angleVal.textContent = wmAngleEl.value
+          bottomOffsetVal.textContent = wmBottomOffsetEl.value
+          xOffsetVal.textContent = wmXOffsetEl.value
           renderPreview()
         })
       })
@@ -1010,12 +1029,12 @@
 
         // ── ขอ file handle ระหว่าง user gesture (click) เพื่อใช้ Streaming API ──
         // File System Access API รองรับ Chrome/Edge; Firefox/Safari ใช้ fallback ใน RAM
-        const canStream = 'showSaveFilePicker' in window
+        const canStream = 'showSaveFilePicker' in globalThis
         let writable = null
 
         if (canStream) {
           try {
-            const fh = await window.showSaveFilePicker({
+            const fh = await globalThis.showSaveFilePicker({
               suggestedName: 'watermarked_images.zip',
               types: [{ description: 'ZIP Archive', accept: { 'application/zip': ['.zip'] } }],
             })
@@ -1037,7 +1056,7 @@
         )
           return
 
-        const controlsToDisable = [imageInput, wmTextEl, wmOpacityEl, wmFontSizeEl, wmSpacingEl, wmAngleEl]
+        const controlsToDisable = [imageInput, wmTextEl, wmOpacityEl, wmFontSizeEl, wmBottomOffsetEl, wmXOffsetEl]
         controlsToDisable.forEach((el) => (el.disabled = true))
         processBtn.disabled = true
         progressWrap.classList.add('active')
@@ -1075,7 +1094,12 @@
           ctx.drawImage(img, 0, 0)
           // scale watermark proportionally to match preview (which is capped at PREVIEW_MAX)
           const scale = Math.max(img.width, img.height) / PREVIEW_MAX
-          const scaledOpts = { ...opts, fontSize: opts.fontSize * scale, spacing: opts.spacing * scale }
+          const scaledOpts = {
+            ...opts,
+            fontSize: opts.fontSize * scale,
+            bottomOffset: opts.bottomOffset * scale,
+            xOffset: opts.xOffset * scale,
+          }
           drawTiledWatermark(ctx, canvas.width, canvas.height, scaledOpts)
           const blob = await canvasToBlob(canvas, file.type)
           return new Uint8Array(await blob.arrayBuffer())
@@ -1175,7 +1199,7 @@
           link.download = 'watermarked_images.zip'
           document.body.appendChild(link)
           link.click()
-          document.body.removeChild(link)
+          link.remove()
         }
 
         clearInterval(timerInterval)
@@ -1193,7 +1217,7 @@
       })
 
       doneBtn.addEventListener('click', () => {
-        ;[imageInput, wmTextEl, wmOpacityEl, wmFontSizeEl, wmSpacingEl, wmAngleEl].forEach(
+        ;[imageInput, wmTextEl, wmOpacityEl, wmFontSizeEl, wmBottomOffsetEl, wmXOffsetEl].forEach(
           (el) => (el.disabled = false),
         )
         processBtn.disabled = true
@@ -1233,7 +1257,8 @@
       }
 
       // initial paint once fonts are ready
-      document.fonts.ready.then(renderPreview)
+      renderPreview()
+      await document.fonts.ready
       renderPreview()
     </script>
   </body>
