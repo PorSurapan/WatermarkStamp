@@ -9,7 +9,10 @@
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏷️</text></svg>" />
-    <script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"
+      integrity="sha384-DT0Ls0mO7JmjTnT+oBuMhEJzYJO1zUqzuuMXNdnOmOQRIpN2BgSjvBV/j50NngIT"
+      crossorigin="anonymous"></script>
     <link
       rel="preconnect"
       href="https://fonts.googleapis.com" />
@@ -257,6 +260,34 @@
         margin: 2px 0 10px;
       }
 
+      /* collapses smoothly (fade + slide + height) instead of snapping to display:none */
+      #setupSection {
+        display: grid;
+        grid-template-rows: 1fr;
+        opacity: 1;
+        transform: translateY(0);
+        transition:
+          grid-template-rows 0.75s ease,
+          opacity 0.75s ease,
+          transform 0.75s ease;
+      }
+      #setupSection.collapsed {
+        grid-template-rows: 0fr;
+        opacity: 0;
+        transform: translateY(-10px);
+        pointer-events: none;
+      }
+      #setupSection .setup-inner {
+        min-height: 0;
+        overflow: hidden;
+        padding: 0 4px 20px;
+        margin: 0 -4px;
+        transition: padding-bottom 0.75s ease;
+      }
+      #setupSection.collapsed .setup-inner {
+        padding-bottom: 0;
+      }
+
       .dropzone {
         border: 1.5px dashed var(--brass-soft);
         border-radius: 10px;
@@ -282,7 +313,7 @@
       }
       .dropzone:has(input:disabled) .dz-title,
       .dropzone:has(input:disabled) .dz-sub {
-        color: #9a917f;
+        color: #5c5648;
       }
       .dropzone input {
         position: absolute;
@@ -327,7 +358,8 @@
         font-weight: 700;
         font-variant-numeric: tabular-nums;
       }
-      input[type='text'] {
+      input[type='text'],
+      select {
         width: 100%;
         padding: 9px 12px;
         border: 1px solid var(--paper-2);
@@ -337,14 +369,38 @@
         font-size: 14px;
         color: var(--text);
       }
-      input[type='text']:disabled {
-        background: #e8e4da;
-        color: #9a917f;
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding-right: 34px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23a9843f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 6 8 10 12 6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s ease,
+          background-color 0.15s ease;
+      }
+      select option {
+        padding: 8px 12px;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 14px;
+      }
+      input[type='text']:disabled,
+      select:disabled {
+        background-color: #e8e4da;
+        color: #5c5648;
         border-color: #ccc8bc;
         cursor: not-allowed;
       }
+      select:disabled {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%235c5648' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='4 6 8 10 12 6'/%3E%3C/svg%3E");
+      }
       input[type='text']:focus-visible,
       input[type='range']:focus-visible,
+      select:focus-visible,
       button:focus-visible {
         outline: 2.5px solid var(--stamp);
         outline-offset: 2px;
@@ -357,6 +413,7 @@
       }
 
       input[type='range'] {
+        appearance: none;
         -webkit-appearance: none;
         width: 100%;
         height: 4px;
@@ -414,7 +471,7 @@
       }
       button#processBtn:disabled {
         background: #d8cfbd;
-        color: #9a917f;
+        color: #5c5648;
         cursor: not-allowed;
       }
 
@@ -657,118 +714,178 @@
           <section
             class="card controls dominant"
             aria-label="ตั้งค่าลายน้ำ">
+            <div id="setupSection">
+              <div class="setup-inner">
+                <h2>
+                  <span class="step">1</span>
+                  เลือกรูปภาพ
+                </h2>
+                <p class="hint">เลือกได้ทีละหลายไฟล์ (รองรับไฟล์รูปภาพทั่วไป เช่น .jpg, .png, .webp)</p>
+                <div
+                  class="dropzone"
+                  id="dropzone">
+                  <input
+                    type="file"
+                    id="imageInput"
+                    aria-label="เลือกรูปภาพ"
+                    accept="image/*"
+                    multiple />
+                  <div class="dz-title">คลิกหรือลากไฟล์มาวางตรงนี้</div>
+                  <div class="dz-sub">รองรับการเลือกหลายไฟล์พร้อมกัน</div>
+                  <div id="fileChip"></div>
+                </div>
+
+                <h2 style="margin-top: 20px">
+                  <span class="step">2</span>
+                  ตั้งค่าลายน้ำ
+                </h2>
+                <p class="hint">ปรับค่าแล้วดูตัวอย่างทางขวาได้ทันที</p>
+
+                <div class="field">
+                  <label for="wmText">ข้อความลายน้ำ</label>
+                  <input
+                    type="text"
+                    id="wmText"
+                    value="ตัวอย่างเอกสาร" />
+                </div>
+
+                <div class="field">
+                  <label for="wmMode">รูปแบบลายน้ำ</label>
+                  <select id="wmMode">
+                    <option
+                      value="single"
+                      selected>
+                      ตราประทับเดี่ยว (ค่าเริ่มต้น)
+                    </option>
+                    <option value="diagonal">ลายน้ำเฉียงเต็มหน้า</option>
+                  </select>
+                </div>
+
+                <div class="field grid2">
+                  <div>
+                    <label for="wmOpacity">
+                      ความโปร่งใส
+                      <span
+                        class="val"
+                        id="opacityVal">
+                        20
+                      </span>
+                      %
+                    </label>
+                    <input
+                      type="range"
+                      id="wmOpacity"
+                      min="0.05"
+                      max="0.5"
+                      step="0.01"
+                      value="0.20" />
+                  </div>
+                  <div>
+                    <label for="wmFontSize">
+                      ขนาดตัวอักษร
+                      <span
+                        class="val"
+                        id="fontSizeVal">
+                        40
+                      </span>
+                      px
+                    </label>
+                    <input
+                      type="range"
+                      id="wmFontSize"
+                      min="12"
+                      max="80"
+                      step="1"
+                      value="40" />
+                  </div>
+                </div>
+
+                <div
+                  class="field grid2"
+                  id="singleFields">
+                  <div>
+                    <label for="wmBottomOffset">
+                      ระยะขอบล่าง
+                      <span
+                        class="val"
+                        id="bottomOffsetVal">
+                        50
+                      </span>
+                      px
+                    </label>
+                    <input
+                      type="range"
+                      id="wmBottomOffset"
+                      min="0"
+                      max="300"
+                      step="1"
+                      value="50" />
+                  </div>
+                  <div>
+                    <label for="wmXOffset">
+                      ขยับซ้าย-ขวา
+                      <span
+                        class="val"
+                        id="xOffsetVal">
+                        0
+                      </span>
+                      px
+                    </label>
+                    <input
+                      type="range"
+                      id="wmXOffset"
+                      min="-300"
+                      max="300"
+                      step="1"
+                      value="0" />
+                  </div>
+                </div>
+
+                <div
+                  class="field grid2"
+                  id="diagonalFields"
+                  style="display: none">
+                  <div>
+                    <label for="wmSpacing">
+                      ระยะห่าง
+                      <span
+                        class="val"
+                        id="spacingVal">
+                        160
+                      </span>
+                      px
+                    </label>
+                    <input
+                      type="range"
+                      id="wmSpacing"
+                      min="60"
+                      max="320"
+                      step="10"
+                      value="160" />
+                  </div>
+                  <div>
+                    <label for="wmAngle">
+                      มุมเอียง
+                      <span
+                        class="val"
+                        id="angleVal">
+                        -30
+                      </span>
+                      °
+                    </label>
+                    <input
+                      type="range"
+                      id="wmAngle"
+                      min="-90"
+                      max="90"
+                      step="5"
+                      value="-30" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <h2>
-              <span class="step">1</span>
-              เลือกรูปภาพ
-            </h2>
-            <p class="hint">เลือกได้ทีละหลายไฟล์ (.jpg, .png)</p>
-            <div
-              class="dropzone"
-              id="dropzone">
-              <input
-                type="file"
-                id="imageInput"
-                aria-label="เลือกรูปภาพ"
-                accept="image/*"
-                multiple />
-              <div class="dz-title">คลิกหรือลากไฟล์มาวางตรงนี้</div>
-              <div class="dz-sub">รองรับการเลือกหลายไฟล์พร้อมกัน</div>
-              <div id="fileChip"></div>
-            </div>
-
-            <h2 style="margin-top: 20px">
-              <span class="step">2</span>
-              ตั้งค่าลายน้ำ
-            </h2>
-            <p class="hint">ปรับค่าแล้วดูตัวอย่างทางขวาได้ทันที</p>
-
-            <div class="field">
-              <label for="wmText">ข้อความลายน้ำ</label>
-              <input
-                type="text"
-                id="wmText"
-                value="ตัวอย่างเอกสาร" />
-            </div>
-
-            <div class="field grid2">
-              <div>
-                <label for="wmOpacity">
-                  ความโปร่งใส
-                  <span
-                    class="val"
-                    id="opacityVal">
-                    15
-                  </span>
-                  %
-                </label>
-                <input
-                  type="range"
-                  id="wmOpacity"
-                  min="0.05"
-                  max="0.5"
-                  step="0.01"
-                  value="0.15" />
-              </div>
-              <div>
-                <label for="wmFontSize">
-                  ขนาดตัวอักษร
-                  <span
-                    class="val"
-                    id="fontSizeVal">
-                    40
-                  </span>
-                  px
-                </label>
-                <input
-                  type="range"
-                  id="wmFontSize"
-                  min="12"
-                  max="80"
-                  step="1"
-                  value="40" />
-              </div>
-            </div>
-
-            <div class="field grid2">
-              <div>
-                <label for="wmBottomOffset">
-                  ระยะขอบล่าง
-                  <span
-                    class="val"
-                    id="bottomOffsetVal">
-                    50
-                  </span>
-                  px
-                </label>
-                <input
-                  type="range"
-                  id="wmBottomOffset"
-                  min="0"
-                  max="300"
-                  step="1"
-                  value="50" />
-              </div>
-              <div>
-                <label for="wmXOffset">
-                  ขยับซ้าย-ขวา
-                  <span
-                    class="val"
-                    id="xOffsetVal">
-                    0
-                  </span>
-                  px
-                </label>
-                <input
-                  type="range"
-                  id="wmXOffset"
-                  min="-300"
-                  max="300"
-                  step="1"
-                  value="0" />
-              </div>
-            </div>
-
-            <h2 style="margin-top: 20px">
               <span class="step">3</span>
               ประมวลผล
             </h2>
@@ -777,7 +894,7 @@
             <button
               id="processBtn"
               disabled>
-              เลือกที่เก็บไฟล์ ZIP และเริ่มประมวลผล
+              เริ่มประมวลผล
             </button>
 
             <div
@@ -870,6 +987,10 @@
                 — รูปใหญ่/ละเอียดสูงใช้เวลานานกว่า
               </li>
               <li>
+                <b>ระยะห่างลายน้ำ (โหมดเฉียง)</b>
+                — ยิ่งถี่ ยิ่งวาดซ้ำมากขึ้น
+              </li>
+              <li>
                 <b>เบราว์เซอร์</b>
                 — Chrome/Edge stream ลง disk เร็วกว่า Firefox/Safari ที่ต้องพักไฟล์ใน RAM
               </li>
@@ -902,20 +1023,28 @@
       const doneBtn = document.getElementById('doneBtn')
 
       const wmTextEl = document.getElementById('wmText')
+      const wmModeEl = document.getElementById('wmMode')
       const wmOpacityEl = document.getElementById('wmOpacity')
       const wmFontSizeEl = document.getElementById('wmFontSize')
       const wmBottomOffsetEl = document.getElementById('wmBottomOffset')
       const wmXOffsetEl = document.getElementById('wmXOffset')
+      const wmSpacingEl = document.getElementById('wmSpacing')
+      const wmAngleEl = document.getElementById('wmAngle')
       const opacityVal = document.getElementById('opacityVal')
       const fontSizeVal = document.getElementById('fontSizeVal')
       const bottomOffsetVal = document.getElementById('bottomOffsetVal')
       const xOffsetVal = document.getElementById('xOffsetVal')
+      const spacingVal = document.getElementById('spacingVal')
+      const angleVal = document.getElementById('angleVal')
+      const singleFieldsEl = document.getElementById('singleFields')
+      const diagonalFieldsEl = document.getElementById('diagonalFields')
+      const setupSectionEl = document.getElementById('setupSection')
 
       let previewImg = null // first user-selected image, used as live preview background
       const ORIGINAL_TITLE = document.title
 
       // ---- single centered watermark stamp at the bottom of the image ----
-      function drawTiledWatermark(ctx, canvasW, canvasH, opts) {
+      function drawStampWatermark(ctx, canvasW, canvasH, opts) {
         ctx.save()
         ctx.font = `bold ${opts.fontSize}px "Sarabun", sans-serif`
         // difference blend + white fill = readable on both light and dark backgrounds
@@ -929,13 +1058,50 @@
         ctx.restore()
       }
 
+      // ---- repeating diagonal watermark tiled across the whole image ----
+      function drawDiagonalWatermark(ctx, canvasW, canvasH, opts) {
+        ctx.save()
+        ctx.font = `bold ${opts.fontSize}px "Sarabun", sans-serif`
+        ctx.fillStyle = `rgba(0, 0, 0, ${opts.opacity})`
+        ctx.textBaseline = 'middle'
+        ctx.textAlign = 'center'
+
+        const angleRad = (opts.angle * Math.PI) / 180
+        const diag = Math.hypot(canvasW, canvasH)
+
+        let rowCount = 0
+        for (let y = -diag; y < diag; y += opts.spacing) {
+          rowCount++
+          const offsetX = rowCount % 2 === 0 ? opts.spacing / 2 : 0
+          for (let x = -diag; x < diag; x += opts.spacing) {
+            ctx.save()
+            ctx.translate(x + offsetX, y)
+            ctx.rotate(angleRad)
+            ctx.fillText(opts.text, 0, 0)
+            ctx.restore()
+          }
+        }
+        ctx.restore()
+      }
+
+      function drawWatermark(ctx, canvasW, canvasH, opts) {
+        if (opts.mode === 'diagonal') {
+          drawDiagonalWatermark(ctx, canvasW, canvasH, opts)
+        } else {
+          drawStampWatermark(ctx, canvasW, canvasH, opts)
+        }
+      }
+
       function currentOpts() {
         return {
           text: wmTextEl.value || 'sample',
+          mode: wmModeEl.value,
           opacity: Number.parseFloat(wmOpacityEl.value),
           fontSize: Number.parseInt(wmFontSizeEl.value),
           bottomOffset: Number.parseInt(wmBottomOffsetEl.value),
           xOffset: Number.parseInt(wmXOffsetEl.value),
+          spacing: Number.parseInt(wmSpacingEl.value),
+          angle: Number.parseInt(wmAngleEl.value),
         }
       }
 
@@ -969,30 +1135,49 @@
           ctx.strokeRect(8, 8, w - 16, h - 16)
         }
 
-        drawTiledWatermark(ctx, w, h, currentOpts())
+        drawWatermark(ctx, w, h, currentOpts())
       }
 
-      ;[wmTextEl, wmOpacityEl, wmFontSizeEl, wmBottomOffsetEl, wmXOffsetEl].forEach((el) => {
+      function updateModeFields() {
+        const isDiagonal = wmModeEl.value === 'diagonal'
+        singleFieldsEl.style.display = isDiagonal ? 'none' : ''
+        diagonalFieldsEl.style.display = isDiagonal ? '' : 'none'
+      }
+
+      ;[wmTextEl, wmOpacityEl, wmFontSizeEl, wmBottomOffsetEl, wmXOffsetEl, wmSpacingEl, wmAngleEl].forEach((el) => {
         el.addEventListener('input', () => {
           opacityVal.textContent = `${Math.round(Number.parseFloat(wmOpacityEl.value) * 100)}`
           fontSizeVal.textContent = wmFontSizeEl.value
           bottomOffsetVal.textContent = wmBottomOffsetEl.value
           xOffsetVal.textContent = wmXOffsetEl.value
+          spacingVal.textContent = wmSpacingEl.value
+          angleVal.textContent = wmAngleEl.value
           renderPreview()
         })
       })
+
+      wmModeEl.addEventListener('change', () => {
+        updateModeFields()
+        renderPreview()
+      })
+      updateModeFields()
 
       imageInput.addEventListener('change', () => {
         const files = imageInput.files
         processBtn.disabled = files.length === 0
         if (files.length > 0) {
           fileChip.innerHTML = `<span class="file-chip">✓ เลือกไว้ ${files.length.toLocaleString('th-TH')} รูป</span>`
-          loadImage(files[0]).then((img) => {
-            previewImg = img
-            previewDims.textContent = `${img.width} × ${img.height}`
-            fitCanvasToImage(img)
-            renderPreview()
-          })
+          loadImage(files[0])
+            .then((img) => {
+              previewImg = img
+              previewDims.textContent = `${img.width} × ${img.height}`
+              fitCanvasToImage(img)
+              renderPreview()
+            })
+            .catch((err) => {
+              console.error(err)
+              fileChip.innerHTML = `<span class="file-chip" style="color:#8c3221;background:#f6e6e2">⚠ ${err.message}</span>`
+            })
         } else {
           fileChip.innerHTML = ''
           previewImg = null
@@ -1023,12 +1208,9 @@
         return `${s.toFixed(1)} วิ`
       }
 
-      processBtn.addEventListener('click', async () => {
-        const files = imageInput.files
-        if (files.length === 0) return
-
-        // ── ขอ file handle ระหว่าง user gesture (click) เพื่อใช้ Streaming API ──
-        // File System Access API รองรับ Chrome/Edge; Firefox/Safari ใช้ fallback ใน RAM
+      // ── ขอ file handle ระหว่าง user gesture (click) เพื่อใช้ Streaming API ──
+      // File System Access API รองรับ Chrome/Edge; Firefox/Safari ใช้ fallback ใน RAM
+      async function resolveOutputWritable() {
         const canStream = 'showSaveFilePicker' in globalThis
         let writable = null
 
@@ -1040,7 +1222,7 @@
             })
             writable = await fh.createWritable()
           } catch (e) {
-            if (e.name === 'AbortError') return // ผู้ใช้กด Cancel
+            if (e.name === 'AbortError') return { cancelled: true, writable: null } // ผู้ใช้กด Cancel
             writable = null
           }
         }
@@ -1053,12 +1235,28 @@
               'รูปทั้งหมดจะถูกโหลดเข้า RAM ก่อนดาวน์โหลด — อาจล่มหากมีรูปจำนวนมาก\n\n' +
               'แนะนำให้ใช้ Chrome หรือ Edge เพื่อประสิทธิภาพสูงสุด\nต้องการดำเนินการต่อหรือไม่?',
           )
-        )
-          return
+        ) {
+          return { cancelled: true, writable: null }
+        }
 
-        const controlsToDisable = [imageInput, wmTextEl, wmOpacityEl, wmFontSizeEl, wmBottomOffsetEl, wmXOffsetEl]
+        return { cancelled: false, writable }
+      }
+
+      function beginProcessingUI() {
+        const controlsToDisable = [
+          imageInput,
+          wmTextEl,
+          wmModeEl,
+          wmOpacityEl,
+          wmFontSizeEl,
+          wmBottomOffsetEl,
+          wmXOffsetEl,
+          wmSpacingEl,
+          wmAngleEl,
+        ]
         controlsToDisable.forEach((el) => (el.disabled = true))
         processBtn.disabled = true
+        setupSectionEl.classList.add('collapsed')
         progressWrap.classList.add('active')
         timeBreakdown.classList.remove('active')
         progressFill.style.width = '0%'
@@ -1066,146 +1264,157 @@
         phaseLabel.classList.remove('phase-2')
         phaseLabel.innerHTML = '<span class="phase-dot"></span> กำลังประทับลายน้ำ'
         statusDiv.classList.remove('done')
+      }
 
-        const overallStart = performance.now()
-        let phase1Elapsed = 0,
-          phase2Elapsed = 0
+      // ปล่อยให้ animation ยุบ setupSection เล่นจบก่อน (CSS transition 0.75s) แล้วเผื่อ buffer
+      // อีกนิด ไม่ให้การประมวลผลรูป (งานหนักบน main thread) มาแย่ง frame budget จนภาพเคลื่อนไหวกระตุก
+      function waitForCollapseAnimation() {
+        return new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+
+      function startTimer(overallStart) {
         timerEl.textContent = '00:00'
-        const timerInterval = setInterval(() => {
+        return setInterval(() => {
           timerEl.textContent = formatTime(performance.now() - overallStart)
         }, 200)
+      }
 
+      async function loadWatermarkFont() {
         statusDiv.innerText = 'กำลังโหลดฟอนต์ Sarabun...'
         document.title = '🔄 กำลังเตรียมฟอนต์...'
         await Promise.all([document.fonts.load('400 30px Sarabun'), document.fonts.load('700 30px Sarabun')])
         await document.fonts.ready
+      }
 
-        const opts = currentOpts()
-        const phase1Start = performance.now()
-        document.title = `⏳ กำลังประทับลายน้ำ (0/${files.length})`
+      // helper: ประทับลายน้ำ 1 ไฟล์ → Uint8Array
+      async function processFile(file, opts) {
+        const img = await loadImage(file)
+        const canvas = document.createElement('canvas')
+        canvas.width = img.width
+        canvas.height = img.height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0)
+        // scale watermark proportionally to match preview (which is capped at PREVIEW_MAX)
+        const scale = Math.max(img.width, img.height) / PREVIEW_MAX
+        const scaledOpts = {
+          ...opts,
+          fontSize: opts.fontSize * scale,
+          bottomOffset: opts.bottomOffset * scale,
+          xOffset: opts.xOffset * scale,
+          spacing: opts.spacing * scale,
+        }
+        drawWatermark(ctx, canvas.width, canvas.height, scaledOpts)
+        const blob = await canvasToBlob(canvas, file.type)
+        return new Uint8Array(await blob.arrayBuffer())
+      }
 
-        // helper: ประทับลายน้ำ 1 ไฟล์ → Uint8Array
-        async function processFile(file) {
-          const img = await loadImage(file)
-          const canvas = document.createElement('canvas')
-          canvas.width = img.width
-          canvas.height = img.height
-          const ctx = canvas.getContext('2d')
-          ctx.drawImage(img, 0, 0)
-          // scale watermark proportionally to match preview (which is capped at PREVIEW_MAX)
-          const scale = Math.max(img.width, img.height) / PREVIEW_MAX
-          const scaledOpts = {
-            ...opts,
-            fontSize: opts.fontSize * scale,
-            bottomOffset: opts.bottomOffset * scale,
-            xOffset: opts.xOffset * scale,
+      // ── STREAMING PATH: เขียนตรงลงดิสก์ทีละรูป ไม่สะสม RAM ──
+      async function runStreamingExport(files, writable, opts, phase1Start) {
+        let writeChain = Promise.resolve()
+        let zipErr = null
+
+        const zipStream = new fflate.Zip((err, data, final) => {
+          if (err) {
+            zipErr = err
+            return
           }
-          drawTiledWatermark(ctx, canvas.width, canvas.height, scaledOpts)
-          const blob = await canvasToBlob(canvas, file.type)
-          return new Uint8Array(await blob.arrayBuffer())
+          const chunk = data.slice() // copy เพราะ fflate อาจ reuse buffer
+          writeChain = writeChain.then(() => writable.write(chunk))
+        })
+
+        for (let i = 0; i < files.length; i++) {
+          progressFill.style.width = ((i / files.length) * 100).toFixed(0) + '%'
+          progressCount.textContent = `${i + 1} / ${files.length} รูป`
+          statusDiv.innerText = `กำลังประทับลายน้ำรูปที่ ${i + 1}/${files.length}...`
+          document.title = `⏳ กำลังประทับลายน้ำ (${i + 1}/${files.length})`
+
+          const file = files[i]
+          try {
+            const data = await processFile(file, opts)
+            const entry = new fflate.ZipPassThrough(`watermarked_${file.name}`)
+            zipStream.add(entry)
+            entry.push(data, true) // true = chunk สุดท้ายของไฟล์นี้
+            await writeChain // รอให้เขียนลงดิสก์ก่อนโหลดรูปถัดไป
+            if (zipErr) throw zipErr
+          } catch (err) {
+            console.error(`Error on ${file.name}:`, err)
+            statusDiv.innerText = `เกิดข้อผิดพลาดกับรูป ${file.name}`
+          }
         }
 
-        if (writable) {
-          // ── STREAMING PATH: เขียนตรงลงดิสก์ทีละรูป ไม่สะสม RAM ──
-          let writeChain = Promise.resolve()
-          let zipErr = null
+        const phase1Elapsed = performance.now() - phase1Start
+        progressFill.style.width = '100%'
+        progressCount.textContent = `${files.length} / ${files.length} รูป`
+        progressFill.classList.add('phase-2')
+        phaseLabel.classList.add('phase-2')
+        phaseLabel.innerHTML = '<span class="phase-dot"></span> กำลังปิดไฟล์ ZIP'
+        statusDiv.innerText = 'กำลังปิดไฟล์ ZIP...'
+        document.title = '📦 กำลังบันทึก ZIP...'
 
-          const zipStream = new fflate.Zip((err, data, final) => {
-            if (err) {
-              zipErr = err
-              return
-            }
-            const chunk = data.slice() // copy เพราะ fflate อาจ reuse buffer
-            writeChain = writeChain.then(() => writable.write(chunk))
-          })
+        const phase2Start = performance.now()
+        zipStream.end()
+        await writeChain
+        await writable.close()
+        const phase2Elapsed = performance.now() - phase2Start
 
-          for (let i = 0; i < files.length; i++) {
-            progressFill.style.width = ((i / files.length) * 100).toFixed(0) + '%'
-            progressCount.textContent = `${i + 1} / ${files.length} รูป`
-            statusDiv.innerText = `กำลังประทับลายน้ำรูปที่ ${i + 1}/${files.length}...`
-            document.title = `⏳ กำลังประทับลายน้ำ (${i + 1}/${files.length})`
+        return { phase1Elapsed, phase2Elapsed }
+      }
 
-            const file = files[i]
-            try {
-              const data = await processFile(file)
-              const entry = new fflate.ZipPassThrough(`watermarked_${file.name}`)
-              zipStream.add(entry)
-              entry.push(data, true) // true = chunk สุดท้ายของไฟล์นี้
-              await writeChain // รอให้เขียนลงดิสก์ก่อนโหลดรูปถัดไป
-              if (zipErr) throw zipErr
-            } catch (err) {
-              console.error(`Error on ${file.name}:`, err)
-              statusDiv.innerText = `เกิดข้อผิดพลาดกับรูป ${file.name}`
-            }
+      // ── IN-MEMORY FALLBACK (fflate, STORE mode) ──
+      async function runInMemoryExport(files, opts, phase1Start) {
+        const zipFiles = {}
+
+        for (let i = 0; i < files.length; i++) {
+          progressFill.style.width = ((i / files.length) * 100).toFixed(0) + '%'
+          progressCount.textContent = `${i + 1} / ${files.length} รูป`
+          statusDiv.innerText = `กำลังประทับลายน้ำรูปที่ ${i + 1}/${files.length}...`
+          document.title = `⏳ กำลังประทับลายน้ำ (${i + 1}/${files.length})`
+
+          const file = files[i]
+          try {
+            const data = await processFile(file, opts)
+            zipFiles[`watermarked_${file.name}`] = [data, { level: 0 }] // STORE
+          } catch (err) {
+            console.error(`Error on ${file.name}:`, err)
+            statusDiv.innerText = `เกิดข้อผิดพลาดกับรูป ${file.name}`
           }
-
-          phase1Elapsed = performance.now() - phase1Start
-          progressFill.style.width = '100%'
-          progressCount.textContent = `${files.length} / ${files.length} รูป`
-          progressFill.classList.add('phase-2')
-          phaseLabel.classList.add('phase-2')
-          phaseLabel.innerHTML = '<span class="phase-dot"></span> กำลังปิดไฟล์ ZIP'
-          statusDiv.innerText = 'กำลังปิดไฟล์ ZIP...'
-          document.title = '📦 กำลังบันทึก ZIP...'
-
-          const phase2Start = performance.now()
-          zipStream.end()
-          await writeChain
-          await writable.close()
-          phase2Elapsed = performance.now() - phase2Start
-        } else {
-          // ── IN-MEMORY FALLBACK (fflate, STORE mode) ──
-          const zipFiles = {}
-
-          for (let i = 0; i < files.length; i++) {
-            progressFill.style.width = ((i / files.length) * 100).toFixed(0) + '%'
-            progressCount.textContent = `${i + 1} / ${files.length} รูป`
-            statusDiv.innerText = `กำลังประทับลายน้ำรูปที่ ${i + 1}/${files.length}...`
-            document.title = `⏳ กำลังประทับลายน้ำ (${i + 1}/${files.length})`
-
-            const file = files[i]
-            try {
-              const data = await processFile(file)
-              zipFiles[`watermarked_${file.name}`] = [data, { level: 0 }] // STORE
-            } catch (err) {
-              console.error(`Error on ${file.name}:`, err)
-              statusDiv.innerText = `เกิดข้อผิดพลาดกับรูป ${file.name}`
-            }
-          }
-
-          phase1Elapsed = performance.now() - phase1Start
-          progressFill.style.width = '0%'
-          progressFill.classList.add('phase-2')
-          phaseLabel.classList.add('phase-2')
-          phaseLabel.innerHTML = '<span class="phase-dot"></span> กำลังบีบอัดไฟล์ ZIP'
-          statusDiv.innerText = 'กำลังบีบอัดไฟล์ ZIP...'
-          document.title = '📦 กำลังบีบอัด ZIP...'
-
-          const phase2Start = performance.now()
-          const zipped = await new Promise((resolve, reject) => {
-            fflate.zip(zipFiles, { level: 0 }, (err, data) => {
-              if (err) reject(err)
-              else resolve(data)
-            })
-          })
-          phase2Elapsed = performance.now() - phase2Start
-
-          progressFill.style.width = '100%'
-          progressCount.textContent = `${files.length} / ${files.length} รูป`
-
-          const zipBlob = new Blob([zipped], { type: 'application/zip' })
-          const link = document.createElement('a')
-          link.href = URL.createObjectURL(zipBlob)
-          link.download = 'watermarked_images.zip'
-          document.body.appendChild(link)
-          link.click()
-          link.remove()
         }
 
-        clearInterval(timerInterval)
+        const phase1Elapsed = performance.now() - phase1Start
+        progressFill.style.width = '0%'
+        progressFill.classList.add('phase-2')
+        phaseLabel.classList.add('phase-2')
+        phaseLabel.innerHTML = '<span class="phase-dot"></span> กำลังบีบอัดไฟล์ ZIP'
+        statusDiv.innerText = 'กำลังบีบอัดไฟล์ ZIP...'
+        document.title = '📦 กำลังบีบอัด ZIP...'
+
+        const phase2Start = performance.now()
+        const zipped = await new Promise((resolve, reject) => {
+          fflate.zip(zipFiles, { level: 0 }, (err, data) => {
+            if (err) reject(err)
+            else resolve(data)
+          })
+        })
+        const phase2Elapsed = performance.now() - phase2Start
+
+        progressFill.style.width = '100%'
+        progressCount.textContent = `${files.length} / ${files.length} รูป`
+
+        const zipBlob = new Blob([zipped], { type: 'application/zip' })
+        const link = document.createElement('a')
+        link.href = URL.createObjectURL(zipBlob)
+        link.download = 'watermarked_images.zip'
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+
+        return { phase1Elapsed, phase2Elapsed }
+      }
+
+      function finishProcessingUI(fileCount, overallStart, phase1Elapsed, phase2Elapsed) {
         const totalTime = formatTime(performance.now() - overallStart)
         timerEl.textContent = totalTime
-        statusDiv.innerText = `เสร็จเรียบร้อย — ${files.length.toLocaleString('th-TH')} รูป ใช้เวลารวม ${totalTime}`
+        statusDiv.innerText = `เสร็จเรียบร้อย — ${fileCount.toLocaleString('th-TH')} รูป ใช้เวลารวม ${totalTime}`
         statusDiv.classList.add('done')
         document.title = `✅ เสร็จสิ้น — ${ORIGINAL_TITLE}`
 
@@ -1214,13 +1423,49 @@
         timeBreakdown.classList.add('active')
 
         doneBtn.style.display = 'block'
+      }
+
+      processBtn.addEventListener('click', async () => {
+        const files = imageInput.files
+        if (files.length === 0) return
+
+        const { cancelled, writable } = await resolveOutputWritable()
+        if (cancelled) return
+
+        beginProcessingUI()
+        await waitForCollapseAnimation()
+
+        const overallStart = performance.now()
+        const timerInterval = startTimer(overallStart)
+
+        await loadWatermarkFont()
+
+        const opts = currentOpts()
+        const phase1Start = performance.now()
+        document.title = `⏳ กำลังประทับลายน้ำ (0/${files.length})`
+
+        const { phase1Elapsed, phase2Elapsed } = writable
+          ? await runStreamingExport(files, writable, opts, phase1Start)
+          : await runInMemoryExport(files, opts, phase1Start)
+
+        clearInterval(timerInterval)
+        finishProcessingUI(files.length, overallStart, phase1Elapsed, phase2Elapsed)
       })
 
       doneBtn.addEventListener('click', () => {
-        ;[imageInput, wmTextEl, wmOpacityEl, wmFontSizeEl, wmBottomOffsetEl, wmXOffsetEl].forEach(
-          (el) => (el.disabled = false),
-        )
+        ;[
+          imageInput,
+          wmTextEl,
+          wmModeEl,
+          wmOpacityEl,
+          wmFontSizeEl,
+          wmBottomOffsetEl,
+          wmXOffsetEl,
+          wmSpacingEl,
+          wmAngleEl,
+        ].forEach((el) => (el.disabled = false))
         processBtn.disabled = true
+        setupSectionEl.classList.remove('collapsed')
         imageInput.value = ''
         fileChip.innerHTML = ''
         previewImg = null
@@ -1238,15 +1483,20 @@
 
       function loadImage(file) {
         return new Promise((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            const img = new Image()
-            img.onload = () => resolve(img)
-            img.onerror = reject
-            img.src = e.target.result
+          // object URL lets the browser sniff the real file bytes to decode the image,
+          // instead of relying on the (sometimes empty/wrong) reported MIME type like
+          // FileReader.readAsDataURL() does
+          const url = URL.createObjectURL(file)
+          const img = new Image()
+          img.onload = () => {
+            URL.revokeObjectURL(url)
+            resolve(img)
           }
-          reader.onerror = reject
-          reader.readAsDataURL(file)
+          img.onerror = () => {
+            URL.revokeObjectURL(url)
+            reject(new Error(`ไม่สามารถโหลดรูป ${file.name} ได้ — ไฟล์อาจเสียหายหรือเป็นฟอร์แมตที่ไม่รองรับ`))
+          }
+          img.src = url
         })
       }
 
