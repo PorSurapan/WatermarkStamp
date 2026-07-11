@@ -70,21 +70,23 @@
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏷️</text></svg>" />
+    <link
+      rel="preload"
+      href="assets/fonts/Sarabun-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin />
+    <link
+      rel="preload"
+      href="assets/fonts/NotoSerifThai-Bold.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin />
     <script
       defer
       src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"
       integrity="sha384-DT0Ls0mO7JmjTnT+oBuMhEJzYJO1zUqzuuMXNdnOmOQRIpN2BgSjvBV/j50NngIT"
       crossorigin="anonymous"></script>
-    <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com" />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Sarabun:wght@400;500;600;700&display=swap"
-      rel="stylesheet" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -103,6 +105,56 @@
       }
     </script>
     <style>
+      @font-face {
+        font-family: 'Sarabun';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('assets/fonts/Sarabun-Regular.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Sarabun';
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url('assets/fonts/Sarabun-Medium.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Sarabun';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url('assets/fonts/Sarabun-SemiBold.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Sarabun';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url('assets/fonts/Sarabun-Bold.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Noto Serif Thai';
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url('assets/fonts/NotoSerifThai-Medium.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Noto Serif Thai';
+        font-style: normal;
+        font-weight: 600;
+        font-display: swap;
+        src: url('assets/fonts/NotoSerifThai-SemiBold.woff2') format('woff2');
+      }
+      @font-face {
+        font-family: 'Noto Serif Thai';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url('assets/fonts/NotoSerifThai-Bold.woff2') format('woff2');
+      }
+
       :root {
         --ink: #332e26;
         --ink-2: #3d372c;

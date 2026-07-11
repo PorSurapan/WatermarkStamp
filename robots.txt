@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://porsurapan.github.io/WatermarkStamp/sitemap.xml
