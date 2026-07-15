@@ -2,7 +2,9 @@
 <html lang="th">
   <head>
     <!-- Google tag (gtag.js) — placed first per Google's guidance, non-blocking via async -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-B75R9G984P"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-B75R9G984P"></script>
     <script>
       window.dataLayer = window.dataLayer || []
       function gtag() {
@@ -905,7 +907,7 @@
                       <span
                         class="val"
                         id="opacityVal">
-                        20
+                        35
                       </span>
                       %
                     </label>
@@ -915,7 +917,7 @@
                       min="0.05"
                       max="0.5"
                       step="0.01"
-                      value="0.20" />
+                      value="0.35" />
                   </div>
                   <div>
                     <label for="wmFontSize">
@@ -923,7 +925,7 @@
                       <span
                         class="val"
                         id="fontSizeVal">
-                        40
+                        70
                       </span>
                       px
                     </label>
@@ -933,7 +935,7 @@
                       min="12"
                       max="80"
                       step="1"
-                      value="40" />
+                      value="70" />
                   </div>
                 </div>
 
@@ -946,7 +948,7 @@
                       <span
                         class="val"
                         id="bottomOffsetVal">
-                        50
+                        70
                       </span>
                       px
                     </label>
@@ -956,7 +958,7 @@
                       min="0"
                       max="300"
                       step="1"
-                      value="50" />
+                      value="70" />
                   </div>
                   <div>
                     <label for="wmXOffset">
@@ -988,7 +990,7 @@
                       <span
                         class="val"
                         id="spacingVal">
-                        160
+                        140
                       </span>
                       px
                     </label>
@@ -998,7 +1000,7 @@
                       min="60"
                       max="320"
                       step="10"
-                      value="160" />
+                      value="140" />
                   </div>
                   <div>
                     <label for="wmAngle">
@@ -1275,6 +1277,30 @@
         drawWatermark(ctx, w, h, currentOpts())
       }
 
+      const MODE_DEFAULTS = {
+        single: { opacity: '0.35', fontSize: '70', bottomOffset: '70', xOffset: '0' },
+        diagonal: { opacity: '0.35', fontSize: '20', spacing: '140', angle: '-30' },
+      }
+
+      function applyModeDefaults(mode) {
+        const defaults = MODE_DEFAULTS[mode]
+        wmOpacityEl.value = defaults.opacity
+        wmFontSizeEl.value = defaults.fontSize
+        if (mode === 'single') {
+          wmBottomOffsetEl.value = defaults.bottomOffset
+          wmXOffsetEl.value = defaults.xOffset
+        } else {
+          wmSpacingEl.value = defaults.spacing
+          wmAngleEl.value = defaults.angle
+        }
+        opacityVal.textContent = `${Math.round(Number.parseFloat(wmOpacityEl.value) * 100)}`
+        fontSizeVal.textContent = wmFontSizeEl.value
+        bottomOffsetVal.textContent = wmBottomOffsetEl.value
+        xOffsetVal.textContent = wmXOffsetEl.value
+        spacingVal.textContent = wmSpacingEl.value
+        angleVal.textContent = wmAngleEl.value
+      }
+
       function updateModeFields() {
         const isDiagonal = wmModeEl.value === 'diagonal'
         singleFieldsEl.style.display = isDiagonal ? 'none' : ''
@@ -1293,7 +1319,35 @@
         })
       })
 
+      const WHEEL_STEP = {
+        wmOpacity: 0.01,
+        wmFontSize: 1,
+        wmBottomOffset: 1,
+        wmXOffset: 1,
+        wmSpacing: 10,
+        wmAngle: 5,
+      }
+
+      ;[wmOpacityEl, wmFontSizeEl, wmBottomOffsetEl, wmXOffsetEl, wmSpacingEl, wmAngleEl].forEach((el) => {
+        const target = el.parentElement || el
+        target.addEventListener(
+          'wheel',
+          (e) => {
+            e.preventDefault()
+            const step = WHEEL_STEP[el.id]
+            const min = Number.parseFloat(el.min)
+            const max = Number.parseFloat(el.max)
+            const dir = e.deltaY < 0 ? 1 : -1
+            const next = Math.min(max, Math.max(min, Number.parseFloat(el.value) + dir * step))
+            el.value = next
+            el.dispatchEvent(new Event('input', { bubbles: true }))
+          },
+          { passive: false },
+        )
+      })
+
       wmModeEl.addEventListener('change', () => {
+        applyModeDefaults(wmModeEl.value)
         updateModeFields()
         renderPreview()
       })
