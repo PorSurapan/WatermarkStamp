@@ -500,7 +500,8 @@
       input[type='text'],
       select {
         width: 100%;
-        padding: 9px 12px;
+        padding: 6px 12px;
+        line-height: 1.8;
         border: 1px solid var(--paper-2);
         background: #fffdf9;
         border-radius: 8px;
@@ -524,6 +525,7 @@
       }
       select option {
         padding: 8px 12px;
+        line-height: 1.8;
         font-family: 'Sarabun', sans-serif;
         font-size: 14px;
       }
@@ -1408,7 +1410,7 @@
         if (canStream) {
           try {
             const fh = await globalThis.showSaveFilePicker({
-              suggestedName: 'watermarked_images.zip',
+              suggestedName: 'Watermark Stamp Output.zip',
               types: [{ description: 'ZIP Archive', accept: { 'application/zip': ['.zip'] } }],
             })
             writable = await fh.createWritable()
@@ -1594,7 +1596,7 @@
         const zipBlob = new Blob([zipped], { type: 'application/zip' })
         const link = document.createElement('a')
         link.href = URL.createObjectURL(zipBlob)
-        link.download = 'watermarked_images.zip'
+        link.download = 'Watermark Stamp Output.zip'
         document.body.appendChild(link)
         link.click()
         link.remove()
