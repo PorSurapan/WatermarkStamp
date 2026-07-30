@@ -1524,7 +1524,7 @@
           const file = files[i]
           try {
             const data = await processFile(file, opts)
-            const entry = new fflate.ZipPassThrough(`watermarked_${file.name}`)
+            const entry = new fflate.ZipPassThrough(`${file.name}`)
             zipStream.add(entry)
             entry.push(data, true) // true = chunk สุดท้ายของไฟล์นี้
             await writeChain // รอให้เขียนลงดิสก์ก่อนโหลดรูปถัดไป
